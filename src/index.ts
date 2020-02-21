@@ -1,23 +1,61 @@
-// Must be at top
-import 'reflect-metadata';
+import "reflect-metadata";
+import { createConnection } from "typeorm";
+import * as express from "express";
+import * as bodyParser from "body-parser";
+import { Request, Response } from "express";
+import { Routes } from "./routes";
+import { typeOrmConfig } from "./config";
+import Doctor from "./models/Doctor";
 
-import { createConnection } from 'typeorm';
+createConnection(typeOrmConfig)
+  .then(async connection => {
+    // create express app
+    const app = express();
+    app.use(bodyParser.json());
 
-import { typeOrmConfig } from './config';
-import Appointment from './models/Appointment';
-import Doctor from './models/Doctor';
-import Patient from './models/Patient';
+    // register express routes from defined application routes
+    Routes.forEach(route => {
+      (app as any)[route.method](
+        route.route,
+        (req: Request, res: Response, next: Function) => {
+          const result = new (route.controller as any)()[route.action](
+            req,
+            res,
+            next
+          );
+          if (result instanceof Promise) {
+            result.then(result =>
+              result !== null && result !== undefined
+                ? res.send(result)
+                : undefined
+            );
+          } else if (result !== null && result !== undefined) {
+            res.json(result);
+          }
+        }
+      );
+    });
 
-(async () => {
-    const conn = await createConnection(typeOrmConfig);
-    console.log('PG connected.');
+    // setup express app here
+    // ...
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // App's main content. This could be an Express or Koa web server for example, or even just a Node console app.
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // start express server
+    app.listen(3000);
 
-    // Closing the TypeORM db connection at the end of the app prevents the process from hanging at the end (ex when you
-    // use ctrl-c to stop the process in your console, or when Docker sends the signal to terminate the process).
-    await conn.close();
-    console.log('PG connection closed.');
-})();
+    // insert new Doctors for test
+    await connection.manager.save(
+      connection.manager.create(Doctor, {
+        name: "Timber"
+      })
+    );
+    await connection.manager.save(
+      connection.manager.create(Doctor, {
+        name: "Phantom"
+      })
+    );
+
+    console.log(
+      "Express server has started on port 3000. Open http://localhost:3000/Doctors to see results"
+    );
+  })
+  .catch(error => console.log(error));

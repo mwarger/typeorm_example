@@ -1,17 +1,24 @@
 {
-  "name": "example-typeorm-postgres",
-  "version": "1.0.0",
-  "main": "dist/index.js",
-  "license": "Unlicense",
-  "devDependencies": {
-    "typescript": "^3.7.3"
-  },
-  "dependencies": {
-    "pg": "^7.15.1",
-    "typeorm": "^0.2.21"
-  },
-  "scripts": {
-    "build": "tsc",
-    "dbseed": "npm run build && node dist/tasks/db/seed.js"
-  }
+   "name": "example-typeorm-postgres",
+   "version": "1.0.0",
+   "main": "dist/index.js",
+   "license": "Unlicense",
+   "devDependencies": {
+      "@types/node": "^8.0.29",
+      "typescript": "3.3.3333",
+      "ts-node": "3.3.0"
+   },
+   "dependencies": {
+      "pg": "^7.15.1",
+      "typeorm": "0.2.22",
+      "reflect-metadata": "^0.1.10",
+      "mysql": "^2.14.1",
+      "express": "^4.15.4",
+      "body-parser": "^1.18.1"
+   },
+   "scripts": {
+      "build": "tsc",
+      "dbseed": "npm run build && node dist/tasks/db/seed.js",
+      "start": "ts-node src/index.ts"
+   }
 }
